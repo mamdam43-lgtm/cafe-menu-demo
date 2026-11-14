@@ -2,37 +2,177 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>قائمة المقهى</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>قائمة مقهى الياسمين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  body{font-family:Tahoma,Arial,sans-serif;margin:0;background:#faf6f0;color:#2b2118}
-  header{background:#4a2c17;color:#fff;text-align:center;padding:24px 12px}
-  h1{margin:0;font-size:26px}
-  main{max-width:520px;margin:auto;padding:16px}
-  h2{border-bottom:2px solid #c98b4b;padding-bottom:6px;margin-top:28px}
-  .item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #d9c9b5}
-  .price{font-weight:bold;color:#8a4b14}
-  a.btn{display:block;text-align:center;background:#25d366;color:#fff;padding:14px;border-radius:10px;margin:24px 0;text-decoration:none;font-weight:bold}
+:root{--ink:#1B2340;--blue:#2638A4;--gold:#E8A317;--bg:#F6F7FB;--line:#E3E6F0;--wa:#12803F;--soft:#5A6385}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Tajawal',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:40px}
+body.has-cart{padding-bottom:170px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header{background:var(--blue);color:#fff;padding:24px 18px 22px;border-bottom:5px solid var(--gold)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:560px;margin:auto}
+header h1{margin:0;font-size:28px;font-weight:700}
+header p{margin:4px 0 0;color:#D6DBF5;font-size:15px}
+.lang{min-height:40px;padding:6px 16px;border:1.5px solid #fff;border-radius:999px;background:transparent;color:#fff;font:inherit;cursor:pointer}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:8px;overflow-x:auto;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line)}
+nav a{white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;font-size:15px}
+main{max-width:560px;margin:auto;padding:4px 16px}
+section{padding-top:20px;scroll-margin-top:56px}
+h2{margin:0 0 4px;font-size:20px;color:var(--blue)}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.name{font-size:17px}
+.price{color:var(--soft);font-size:15px}
+.step{display:flex;align-items:center;gap:10px;direction:ltr}
+.step button{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--blue);background:#fff;color:var(--blue);font-size:22px;line-height:1;cursor:pointer}
+.step button.add{background:var(--blue);color:#fff}
+.step span{min-width:18px;text-align:center;font-weight:700}
+.demo{margin:28px 0 0;text-align:center;color:var(--soft);font-size:13px}
+#bar{display:none;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+#bar.on{display:block}
+.bar-in{max-width:560px;margin:auto}
+.sum{display:flex;justify-content:space-between;font-weight:700;margin-bottom:8px}
+#tbl{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin-bottom:8px}
+#send{width:100%;min-height:48px;border:0;border-radius:12px;background:var(--wa);color:#fff;font:inherit;font-size:17px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
-<header><h1>مقهى النموذج</h1><p>قائمة الطعام والمشروبات</p></header>
+<header>
+  <div class="top">
+    <div><h1 id="h1"></h1><p id="tag"></p></div>
+    <button class="lang" id="lang" type="button"></button>
+  </div>
+</header>
+<nav id="nav" aria-label="categories"></nav>
 <main id="menu"></main>
-<main><a class="btn" href="https://wa.me/212600000000" target="_blank">اطلب عبر واتساب</a></main>
+<p class="demo" id="demo"></p>
+<div id="bar">
+  <div class="bar-in">
+    <div class="sum"><span id="cnt"></span><span id="tot"></span></div>
+    <input id="tbl" type="text" inputmode="numeric" autocomplete="off">
+    <button id="send" type="button"></button>
+  </div>
+</div>
 <script>
-const data = {
-  "المشروبات الساخنة": [["قهوة سوداء", 12], ["نص نص", 15], ["شاي بالنعناع", 10]],
-  "المشروبات الباردة": [["عصير برتقال", 18], ["موهيتو", 25]],
-  "الحلويات": [["كرواسان", 8], ["كيك الشوكولا", 20]]
+const CONFIG = {
+  ar: "مقهى الياسمين",
+  fr: "Café Yasmine",
+  tagAr: "قائمة رقمية",
+  tagFr: "Menu digital",
+  whatsapp: "212600000000",
+  curAr: "درهم",
+  curFr: "DH"
 };
-const root = document.getElementById("menu");
-for (const [cat, items] of Object.entries(data)) {
-  let html = "<h2>" + cat + "</h2>";
-  for (const [name, price] of items) {
-    html += '<div class="item"><span>' + name + '</span><span class="price">' + price + ' درهم</span></div>';
-  }
-  root.innerHTML += html;
+
+const MENU = [
+  { ar: "مشروبات ساخنة", fr: "Boissons chaudes", items: [
+    ["أتاي بالنعناع", "Thé à la menthe", 10],
+    ["قهوة سوداء", "Café noir", 12],
+    ["نص نص", "Café au lait", 15],
+    ["شوكولا ساخنة", "Chocolat chaud", 18]
+  ]},
+  { ar: "مشروبات باردة", fr: "Boissons froides", items: [
+    ["عصير برتقال", "Jus d'orange", 15],
+    ["عصير أفوكا", "Jus d'avocat", 22],
+    ["موهيتو", "Mojito (sans alcool)", 25]
+  ]},
+  { ar: "حلويات ومعجنات", fr: "Douceurs", items: [
+    ["بغرير", "Baghrir", 10],
+    ["مسمن", "Msemen", 8],
+    ["كرواسان", "Croissant", 8],
+    ["كيك الشوكولا", "Gâteau au chocolat", 20]
+  ]},
+  { ar: "وجبات خفيفة", fr: "Snacks", items: [
+    ["سندويتش جبن", "Sandwich au fromage", 25],
+    ["بيتزا مارغريتا", "Pizza margherita", 35]
+  ]}
+];
+
+const T = {
+  ar: { send: "أرسل الطلب عبر واتساب", table: "رقم الطاولة (اختياري)", items: "عناصر", demo: "نسخة تجريبية من Tawla Digital", order: "طلب جديد", total: "المجموع", tbl: "الطاولة", add: "إضافة", rm: "إزالة", other: "Français" },
+  fr: { send: "Envoyer la commande sur WhatsApp", table: "Numéro de table (facultatif)", items: "articles", demo: "Démo par Tawla Digital", order: "Nouvelle commande", total: "Total", tbl: "Table", add: "Ajouter", rm: "Retirer", other: "العربية" }
+};
+
+let lang = "ar";
+const qty = {};
+const $ = (id) => document.getElementById(id);
+const cur = () => (lang === "ar" ? CONFIG.curAr : CONFIG.curFr);
+
+function render() {
+  const L = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.title = CONFIG[lang];
+  $("h1").textContent = CONFIG[lang];
+  $("tag").textContent = lang === "ar" ? CONFIG.tagAr : CONFIG.tagFr;
+  $("lang").textContent = L.other;
+  $("demo").textContent = L.demo;
+  $("tbl").placeholder = L.table;
+  $("send").textContent = L.send;
+
+  $("nav").innerHTML = MENU.map((c, ci) => `<a href="#c${ci}">${c[lang]}</a>`).join("");
+
+  $("menu").innerHTML = MENU.map((c, ci) => {
+    const rows = c.items.map((it, ii) => {
+      const k = ci + "-" + ii;
+      const q = qty[k] || 0;
+      const ctrl = q === 0
+        ? `<button class="add" type="button" aria-label="${L.add}" data-k="${k}" data-d="1">+</button>`
+        : `<button type="button" aria-label="${L.rm}" data-k="${k}" data-d="-1">−</button><span>${q}</span><button class="add" type="button" aria-label="${L.add}" data-k="${k}" data-d="1">+</button>`;
+      return `<div class="item"><div><div class="name">${it[lang === "ar" ? 0 : 1]}</div><div class="price">${it[2]} ${cur()}</div></div><div class="step">${ctrl}</div></div>`;
+    }).join("");
+    return `<section id="c${ci}"><h2>${c[lang]}</h2>${rows}</section>`;
+  }).join("");
+
+  updateBar();
 }
+
+function lines() {
+  const out = [];
+  MENU.forEach((c, ci) => c.items.forEach((it, ii) => {
+    const q = qty[ci + "-" + ii] || 0;
+    if (q > 0) out.push({ q, name: it[lang === "ar" ? 0 : 1], price: it[2] });
+  }));
+  return out;
+}
+
+function updateBar() {
+  const ls = lines();
+  const count = ls.reduce((s, l) => s + l.q, 0);
+  const total = ls.reduce((s, l) => s + l.q * l.price, 0);
+  $("cnt").textContent = count + " " + T[lang].items;
+  $("tot").textContent = total + " " + cur();
+  $("bar").classList.toggle("on", count > 0);
+  document.body.classList.toggle("has-cart", count > 0);
+}
+
+function send() {
+  const L = T[lang];
+  const ls = lines();
+  if (ls.length === 0) return;
+  const total = ls.reduce((s, l) => s + l.q * l.price, 0);
+  let msg = L.order + "\n";
+  ls.forEach((l) => { msg += l.q + " × " + l.name + " = " + l.q * l.price + " " + cur() + "\n"; });
+  msg += L.total + ": " + total + " " + cur();
+  const t = $("tbl").value.trim();
+  if (t) msg += "\n" + L.tbl + ": " + t;
+  window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(msg), "_blank");
+}
+
+$("menu").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-k]");
+  if (!b) return;
+  const k = b.dataset.k;
+  qty[k] = Math.max(0, (qty[k] || 0) + Number(b.dataset.d));
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
+});
+$("lang").addEventListener("click", () => { lang = lang === "ar" ? "fr" : "ar"; render(); });
+$("send").addEventListener("click", send);
+render();
 </script>
 </body>
 </html>
